@@ -99,29 +99,10 @@ PARTVARS
   sudo chmod 0644 "$partition_vars"
 fi
 
-# Overlay the bundled Debian Xorg/fbdev stack onto the rootfs.  L4T 4.9
-# exposes fbdev not DRM/KMS, so ChromeOS' ozone/drm path cannot work; we
-# run Chrome under Xorg with the fbdev DDX instead.
-#
-# After copy, prune two Debian files that break ChromeOS:
-#   * /usr/lib/tmpfiles.d/man-db.conf references user/group `man` (absent
-#     in ChromeOS) → systemd-tmpfiles exits 73 for every tmpfiles run.
-#   * /usr/bin/udevadm is the Debian systemd-257 binary that needs
-#     libseccomp.so.2 from /usr/lib/aarch64-linux-gnu/ (not in ChromeOS's
-#     ld.so.conf) → dynamic linker exits 127, hanging udev-trigger-early.
-# TODO: pre-prune these from xorg-deb/root/ so the copy is clean.
-if [[ -d "$HOME/switch-cros/xorg-deb/root" ]]; then
-  sudo cp -a "$HOME/switch-cros/xorg-deb/root/." "$root_mnt/"
-  sudo rm -f \
-    "$root_mnt/usr/lib/tmpfiles.d/man-db.conf" \
-    "$root_mnt/usr/bin/udevadm"
-fi
-
 # build_image ships rootfs with `/` owned by chronos:chronos, which trips
 # systemd-tmpfiles "unsafe path transition" on every canonicalization
 # through /, blocking creation of /run/chromeos_startup, /run/namespaces,
-# /var/log/chrome, /var/log/ui, etc.  Must run AFTER the xorg-deb cp so
-# the chown reliably wins.
+# /var/log/chrome, /var/log/ui, etc.
 # TODO: move into board_specific_setup.sh.
 sudo chown root:root "$root_mnt"
 
@@ -160,7 +141,7 @@ done
 # chrome_dev.conf (or a Switch-specific chrome_dev.d/ fragment dir), this
 # whole block goes away.
 chrome_dev="$root_mnt/etc/chrome_dev.conf"
-sentinel="# switch-t210 bring-up: Xorg/fbdev"
+sentinel="# switch-t210 bring-up: Xorg"
 if [[ -f "$chrome_dev" ]] && ! sudo grep -q "$sentinel" "$chrome_dev"; then
   sudo tee -a "$chrome_dev" >/dev/null <<EOF
 
@@ -175,6 +156,8 @@ DISPLAY=:0
 --ozone-platform=x11
 --ash-host-window-bounds=720x1280
 --disable-features=FederatedService,EncryptedReportingPipeline,DeviceEncryptedReportingPipelineEnabled,CrOSLateBootMissiveStorage,CloudReporting,EnterpriseReportingUI,EnableReportingFromUnmanagedDevices,ReportingServiceAlwaysFlush,ReportingAndNEL,FledgeRealTimeReporting,Floss,FlossAvailabilityCheck,UseFlossInsteadOfBluez,FlossTelephony
+--use-gl=angle
+--use-angle=gles
 EOF
   sudo chmod 0644 "$chrome_dev"
 fi
