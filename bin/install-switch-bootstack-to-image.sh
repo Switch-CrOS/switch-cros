@@ -154,7 +154,7 @@ DISPLAY=:0
 !--disable-gpu-compositing
 !--disable-gpu-rasterization
 --ozone-platform=x11
---ash-host-window-bounds=720x1280
+--ash-host-window-bounds=1280x720
 --disable-features=FederatedService,EncryptedReportingPipeline,DeviceEncryptedReportingPipelineEnabled,CrOSLateBootMissiveStorage,CloudReporting,EnterpriseReportingUI,EnableReportingFromUnmanagedDevices,ReportingServiceAlwaysFlush,ReportingAndNEL,FledgeRealTimeReporting,Floss,FlossAvailabilityCheck,UseFlossInsteadOfBluez,FlossTelephony
 --use-gl=angle
 --use-angle=gles
