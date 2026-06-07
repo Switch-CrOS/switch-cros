@@ -162,6 +162,16 @@ EOF
   sudo chmod 0644 "$chrome_dev"
 fi
 
+# fwupd: disable the test/dummy plugins.  On dev/test images they expose a
+# phantom "Integrated Webcam" firmware update that can never apply (the Switch
+# has no webcam).  fwupd.conf is owned by the fwupd package, so we can't ship
+# it from the overlay without a file collision; append to the existing
+# DisabledPlugins line here instead.  Idempotent.
+fwupd_conf="$root_mnt/etc/fwupd/fwupd.conf"
+if [[ -f "$fwupd_conf" ]] && ! sudo grep -qE '^DisabledPlugins=.*\btest\b' "$fwupd_conf"; then
+  sudo sed -i -E 's|^(DisabledPlugins=.*)$|\1;test;test_ble|' "$fwupd_conf"
+fi
+
 sync
 sudo umount "$root_mnt"
 sudo losetup -d "$loop"
