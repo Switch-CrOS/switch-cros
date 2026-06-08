@@ -158,6 +158,12 @@ DISPLAY=:0
 --disable-features=FederatedService,EncryptedReportingPipeline,DeviceEncryptedReportingPipelineEnabled,CrOSLateBootMissiveStorage,CloudReporting,EnterpriseReportingUI,EnableReportingFromUnmanagedDevices,ReportingServiceAlwaysFlush,ReportingAndNEL,FledgeRealTimeReporting,Floss,FlossAvailabilityCheck,UseFlossInsteadOfBluez,FlossTelephony
 --use-gl=angle
 --use-angle=gles
+# Force GPU (tile) rasterization on. The CrOS GPU blocklist (entry 137 in
+# software_rendering_list.json) disables gpu_tile_rasterization for any GPU not
+# in its allowlist (Intel/Mali-T8|G/Imagination/Freedreno/AMD); Tegra isn't
+# listed, so it defaults to software raster. This switch is honored before the
+# blocklist check in GetGpuRasterizationFeatureStatus(). ~7% on Speedometer 3.1.
+--enable-gpu-rasterization
 EOF
   sudo chmod 0644 "$chrome_dev"
 fi
